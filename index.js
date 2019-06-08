@@ -24,20 +24,17 @@ app.get("/getallbooks", (req, res, next) => {
 
   var promises = allBooks.books.map((grid) => {
     return new Promise(function(resolve, reject) {
-      axios.get("https://www.goodreads.com/book/show?key=" + process.env.REACT_APP_GOODREADS
-      + "&id=" + grid).then(result => {
-        responses.push(parser.toJson(result.data))
+      getInfoFromGoodreads(grid, bookResult => {
+        responses.push(bookResult)
         resolve();
-        }
-      )
-    })
-  })
+      })
 
-  // if so - can we refactor to use the old method, where the resolve() occurs in the passed in lambda
+    })
+  });
 
   Promise.all(promises)
-  .then(result => res.json({}.books = responses))
-  .catch(console.error)
+    .then(result => res.json({}.books = responses))
+    .catch(console.error)
 
 })
 
@@ -51,7 +48,6 @@ function getInfoFromGoodreads(grid, lamda) {
     },
     error => {
       console.log("ERROR", error);
-      //res.status(error.response.status || 404)
       lamda(["Something appears to have gone wrong"]);
     }
   )
