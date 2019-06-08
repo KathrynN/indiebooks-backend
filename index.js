@@ -1,11 +1,13 @@
 var express = require("express");
 const axios = require('axios');
 var parser = require('xml2json');
+var cors = require('cors');
 
 require('dotenv').config();
 
 
 var app = express();
+app.use(cors());
 app.listen(3001, () => {
  console.log("Server running on port 3001");
 });
