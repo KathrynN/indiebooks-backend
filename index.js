@@ -11,18 +11,21 @@ require('dotenv').config();
 
 var app = express();
 app.use(cors());
+
 app.listen(3001, () => {
  console.log("Server running on port 3001");
 });
+
 app.get("/getbookinfo", (req, res, next) => {
   getInfoFromGoodreads(req.query.grid, res.json)
 });
 
 app.get("/getallbooks", (req, res, next) => {
-  var allBooks = JSON.parse(fs.readFileSync('allBooks.json', 'utf8'));
+  var allBooks = JSON.parse(fs.readFileSync('allBooks.json', 'utf8')).books;
+  allBooks = _.shuffle(allBooks);
   const responses = [];
 
-  var promises = allBooks.books.map((grid) => {
+  var promises = allBooks.map((grid) => {
     return new Promise(function(resolve, reject) {
       getInfoFromGoodreads(grid, bookResult => {
         responses.push(bookResult)
