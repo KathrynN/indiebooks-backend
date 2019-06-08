@@ -20,7 +20,8 @@ app.get("/getbookinfo", (req, res, next) => {
     },
     error => {
       console.log(error);
-      res.json(["Something appears to have gone wrong"]);
+      res.status(error.response.status || 404)
+      res.json([{"Something appears to have gone wrong"}]);
     }
   )
 });
