@@ -31,9 +31,47 @@ app.get("/getallbooks", (req, res, next) => {
 app.post('/addbook', function(req, res) {
     var book_id = req.body.bookId;
     console.log("received request to include " + book_id)
-    // TODO include book id xD
+    addBook(book_id);
     res.send(book_id);
 });
+
+function addBook(bookId) {
+  getInfoFromGoodreads(bookId, (data) => {
+    data = JSON.parse(data);
+    const book = data.GoodreadsResponse.book;
+    if (mightBeTradPublished(book)) {
+      console.log("Might be indie? listed publisher for ", book.title, " is ", book.publisher)
+      const suggestionsObject = JSON.parse(fs.readFileSync('suggestions.json', 'utf8'));
+      suggestionsObject.suggestions.push({
+        "title": book.title,
+        "authors": book.authors,
+        "id": book.id,
+        "publisher": book.publisher
+      })
+      fs.writeFileSync('suggestions.json', JSON.stringify(suggestionsObject, null, 2), 'utf-8');
+    } else {
+        console.log("Is indie ", book.title)
+        appendToFile(book.id);
+    }
+  })
+}
+
+function appendToFile(bookId) {
+  const allBooksObject = JSON.parse(fs.readFileSync('allBooks.json', 'utf8'));
+  const allBooks = allBooksObject.books;
+  bookId = parseInt(bookId)
+  if (! allBooks.includes(bookId)) {
+    allBooksObject.books.push(bookId)
+    fs.writeFileSync('allBooks.json', JSON.stringify(allBooksObject, null, 2), 'utf-8');
+    console.log("adding", bookId)
+  } else {
+    console.log(bookId, "already found in file")
+  }
+}
+
+function mightBeTradPublished(book) {
+  return book.publisher && !_.isEmpty(book.publisher) && book.publisher !== "Independently Published"
+}
 
 function getInfoForAllBooksFromGoodreads(allBooks, res) {
   const responses = [];
